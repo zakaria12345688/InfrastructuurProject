@@ -1,0 +1,57 @@
+---
+- name: Ensure system is up to date
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+    update_cache: yes
+  become: yes
+  when: ansible_distribution in ['Rocky', 'AlmaLinux']
+
+- name: Install required packages
+  ansible.builtin.dnf:
+    name:
+      - epel-release
+      - firewalld
+      - python3-pip
+      - git
+      - vim
+    state: present
+  become: yes
+  when: ansible_distribution in ['Rocky', 'AlmaLinux']
+
+- name: Create Calibre group
+  ansible.builtin.group:
+    name: "{{ calibre_server.group }}"
+    state: present
+  become: yes
+
+- name: Create Calibre user
+  ansible.builtin.user:
+    name: "{{ calibre_server.user }}"
+    group: "{{ calibre_server.group }}"
+    create_home: yes
+    shell: /bin/bash
+  become: yes
+
+- name: Create Calibre server directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ calibre_server.user }}"
+    group: "{{ calibre_server.group }}"
+    mode: '0755'
+  loop:
+    - "{{ calibre_server.install_dir }}"
+    - "{{ calibre_server.install_dir }}/config"
+    - "{{ calibre_server.install_dir }}/books"
+    - "{{ calibre_server.install_dir }}/nginx/conf"
+    - "{{ calibre_server.install_dir }}/letsencrypt"
+  become: yes
+
+- name: Set SELinux context for directories
+  ansible.builtin.seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes
+  become: yes
+  when: ansible_selinux.status == "enabled"

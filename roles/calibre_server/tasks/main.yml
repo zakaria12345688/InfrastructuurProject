@@ -1,0 +1,15 @@
+---
+- name: Setup base system
+  import_tasks: setup.yml
+
+- name: Install and configure Docker
+  import_tasks: docker.yml
+
+- name: Configure firewall
+  import_tasks: firewall.yml
+
+- name: Install and configure Nginx
+  import_tasks: nginx.yml
+
+# - name: Setup Let's Encrypt
+#   import_tasks: letsencrypt.yml

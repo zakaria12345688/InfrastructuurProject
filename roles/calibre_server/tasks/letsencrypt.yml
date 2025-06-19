@@ -1,0 +1,24 @@
+---
+- name: Install certbot
+  ansible.builtin.dnf:
+    name: certbot
+    state: present
+  become: yes
+
+- name: Obtain Let's Encrypt certificate
+  ansible.builtin.command:
+    cmd: certbot certonly --standalone --non-interactive --agree-tos --email {{ calibre_server.email }} -d {{ calibre_server.domain }} {% if calibre_server.letsencrypt_staging %}--staging{% endif %}
+    creates: /etc/letsencrypt/live/{{ calibre_server.domain }}/fullchain.pem
+  become: yes
+
+- name: Setup cronjob for certificate renewal
+  ansible.builtin.cron:
+    name: Renew Let's Encrypt certificates
+    minute: "0"
+    hour: "3"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: "certbot renew --quiet && docker compose -f {{ calibre_server.install_dir }}/docker-compose.yml restart nginx"
+    user: root
+  become: yes

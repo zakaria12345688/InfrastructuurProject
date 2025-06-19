@@ -1,0 +1,34 @@
+---
+- name: Ensure firewalld is installed
+  ansible.builtin.dnf:
+    name: firewalld
+    state: present
+  become: yes
+
+- name: Start and enable firewalld
+  ansible.builtin.systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Configure firewall rules
+  ansible.builtin.firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  loop:
+    - 22/tcp
+    - 80/tcp
+    - 443/tcp
+  become: yes
+
+- name: Drop all other incoming traffic
+  ansible.builtin.firewalld:
+    zone: public
+    permanent: yes
+    state: enabled
+    immediate: yes
+    rich_rule: 'rule family="ipv4" priority="32767" drop'
+  become: yes

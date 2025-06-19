@@ -1,0 +1,6 @@
+---
+- name: Deploy Calibre Server
+  hosts: localhost
+  become: yes
+  roles:
+    - calibre_server

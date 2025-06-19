@@ -1,0 +1,85 @@
+---
+- name: Remove conflicting podman-docker package
+  ansible.builtin.dnf:
+    name: podman-docker
+    state: absent
+  become: true
+
+- name: Install Docker dependencies
+  ansible.builtin.dnf:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+    state: present
+  become: true
+
+- name: Add Docker repository
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+    mode: '0644'
+  become: true
+
+- name: Install Docker
+  ansible.builtin.dnf:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+  become: true
+
+- name: Install Docker Compose plugin
+  ansible.builtin.command:
+    cmd: dnf install docker-compose-plugin
+    creates: /usr/libexec/docker/cli-plugins/docker-compose
+  become: true
+
+- name: Enable and start Docker
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+  become: true
+
+- name: Add calibre user to docker group
+  ansible.builtin.user:
+    name: "{{ calibre_server.user }}"
+    groups: docker
+    append: true
+  become: true
+  notify: Restart Docker
+
+- name: Add current user to docker group
+  ansible.builtin.user:
+    name: zakaria
+    groups: docker
+    append: true
+  become: true
+  notify: Restart Docker
+
+- name: Ensure correct permissions on Docker socket
+  ansible.builtin.file:
+    path: /var/run/docker.sock
+    owner: root
+    group: docker
+    mode: '0660'
+  become: true
+  notify: Restart Docker
+
+- name: Deploy docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: /home/calibre/calibre-server/docker-compose.yml
+    owner: "{{ calibre_server.user }}"
+    group: "{{ calibre_server.group }}"
+    mode: '0644'
+  become: true
+
+- name: Start Calibre server containers
+  ansible.builtin.command:
+    cmd: docker compose -f /home/calibre/calibre-server/docker-compose.yml up -d
+    chdir: /home/calibre/calibre-server
+  become: true
+  become_user: "{{ calibre_server.user }}"

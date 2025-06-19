@@ -1,0 +1,29 @@
+services:
+  calibre:
+    image: lscr.io/linuxserver/calibre:latest
+    container_name: calibre
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ={{ calibre_server.timezone }}
+      - PASSWORD={{ calibre_server.password }}
+    volumes:
+      - /home/calibre/calibre-server/config:/config
+      - /home/calibre/calibre-server/books:/books
+    ports:
+      - {{ calibre_server.gui_port }}:8080
+      - {{ calibre_server.content_port }}:8081
+    restart: unless-stopped
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - /home/calibre/calibre-server/nginx/conf:/etc/nginx/conf.d
+    ports:
+      - 80:80
+    depends_on:
+      - calibre
+    restart: unless-stopped
+networks:
+  calibre-network:
+    driver: bridge

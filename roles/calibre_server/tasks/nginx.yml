@@ -1,0 +1,10 @@
+---
+- name: Deploy Nginx configuration
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "{{ calibre_server.install_dir }}/nginx/conf/calibre.conf"
+    owner: "{{ calibre_server.user }}"
+    group: "{{ calibre_server.group }}"
+    mode: '0644'
+  become: yes
+  notify: Restart Calibre

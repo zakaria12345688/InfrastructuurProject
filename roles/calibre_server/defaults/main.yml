@@ -1,0 +1,14 @@
+---
+calibre_server:
+  user: "{{ ansible_user | default('calibre') }}"
+  group: "{{ ansible_user | default('calibre') }}"
+  install_dir: "/home/{{ calibre_server.user }}/calibre-server"
+  timezone: "Europe/Amsterdam"
+  password: "secure_calibre_password"
+  domain: "calibre.example.com"
+  email: "admin@example.com"
+  gui_port: 8080
+  content_port: 8081
+  nginx_port: 443
+  docker_compose_version: "2.24.6"
+  letsencrypt_staging: false

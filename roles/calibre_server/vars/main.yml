@@ -1,0 +1,3 @@
+---
+calibre_server_puid: "{{ ansible_user_id }}"
+calibre_server_pgid: "{{ ansible_user_id }}"

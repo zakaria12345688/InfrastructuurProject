@@ -1,0 +1,19 @@
+---
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+      ansible_python_interpreter: /usr/bin/python3
+  vars:
+    calibre_server:
+      user: calibre
+      group: calibre
+      install_dir: /home/calibre/calibre-server
+      timezone: Europe/Amsterdam
+      password: "secure_calibre_password_123"
+      domain: calibre.localhost
+      email: "zakaria4897756@gmail.com"
+      gui_port: 8080
+      content_port: 8081
+      nginx_port: 443
+      letsencrypt_staging: true

@@ -1,0 +1,12 @@
+---
+- name: Restart Calibre
+  ansible.builtin.command:
+    cmd: docker compose -f {{ calibre_server.install_dir }}/docker-compose.yml up -d
+    chdir: "{{ calibre_server.install_dir }}"
+  become: yes
+  become_user: "{{ calibre_server.user }}"
+- name: Restart Docker
+  ansible.builtin.systemd:
+    name: docker
+    state: restarted
+  become: true
